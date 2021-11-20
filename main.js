@@ -198,14 +198,18 @@ const app = {
     // Repeat song
     repeatBtn.onclick = () => {
       _this.isReapeat = !_this.isReapeat;
-      repeatBtn.classList.toggle('active', _this.isReapeat);
-      _this.isReapeat ? audio.loop = true : audio.loop = false;
       _this.setConfig('isReapeat', _this.isReapeat );
+      repeatBtn.classList.toggle('active', _this.isReapeat);
     }
 
     // Handle next song when audio ended
     audio.onended = () => {
-      nextSongBtn.click()
+      if(_this.isReapeat){
+        audio.play();
+      }
+      else{
+        nextSongBtn.click()
+      }
     }
 
     playlist.onclick = (e) => {
