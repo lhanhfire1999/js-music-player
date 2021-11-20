@@ -61,7 +61,36 @@ const app = {
       path: './assets/path/song5.mp3',
       image: './assets/img/song5.png',
     },
-    
+    {
+      name:'Thay Lòng',
+      singer: 'DIMZ, TVk, NHT',
+      path: './assets/path/song1.mp3',
+      image: './assets/img/song1.png',
+    },
+    {
+      name:'Ái Nộ',
+      singer: 'Yến Tatoo, Masew, Great',
+      path: './assets/path/song2.mp3',
+      image: './assets/img/song2.png',
+    },
+    {
+      name:'Đông Phai Mờ Dáng Ai',
+      singer: 'DatKaa, QT Beatz',
+      path: './assets/path/song3.mp3',
+      image: './assets/img/song3.png',
+    },
+    {
+      name:'Cưới Luôn Được Không?',
+      singer: 'YuniBoo, Goctoi Mixer',
+      path: './assets/path/song4.mp3',
+      image: './assets/img/song4.png',
+    },
+    {
+      name:'Yêu Là Cưới',
+      singer: 'Phát Hồ, X2X',
+      path: './assets/path/song5.mp3',
+      image: './assets/img/song5.png',
+    },
   ],
   defaultProperties(){
     Object.defineProperty(this, 'currentSong', {
@@ -114,7 +143,7 @@ const app = {
     }
 
     // When Seek audio
-    process.onchange = (e) => {
+    process.oninput = (e) => {
       const seekTime = Math.floor(e.target.value * audio.duration /100);
       audio.currentTime = seekTime;
     }
@@ -134,9 +163,9 @@ const app = {
         _this.nextSong();
       }
       audio.play();
-      _this.render()
+      _this.render();
+      _this.scrollActiveSong();
     }
-
     // Handle click prevSongBtn
     prevSongBtn.onclick = () => {
       if(_this.isRandom){
@@ -147,6 +176,7 @@ const app = {
       }
       audio.play();
       _this.render()
+      _this.scrollActiveSong();
     }
 
     // Random song
@@ -159,22 +189,19 @@ const app = {
     // Repeat song
     repeatBtn.onclick = () => {
       _this.isReapeat = !_this.isReapeat;
+
       repeatBtn.classList.toggle('active', _this.isReapeat);
+      _this.isReapeat ? audio.loop = true : audio.loop = false;
     }
 
     // Handle next song when audio ended
     audio.onended = () => {
-      if(_this.isReapeat){
-        audio.play();
-      }
-      else{
-        nextSongBtn.click()
-      }
+      nextSongBtn.click()
     }
   },
   nextSong(){
     this.currentIndex++;
-    if(this.currentIndex >= this.songs.length-1){
+    if(this.currentIndex > this.songs.length-1){
       this.currentIndex = 0;
     }
     this.loadCurrentSong();
@@ -199,6 +226,23 @@ const app = {
     cdThumb.style.backgroundImage = `url('${this.currentSong.image}')`;
     audio.src = this.currentSong.path;
   },
+  scrollActiveSong(){
+    if(this.currentIndex < 5){
+      setTimeout(() =>{
+        $('.song.active').scrollIntoView({
+          behavior: 'smooth',
+          block: 'end'
+        });
+      }, 200)
+    }else{
+      setTimeout(() =>{
+        $('.song.active').scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }, 200);
+    }
+  },
   render() {
     const htmls = this.songs.map((song, index) => {
       return `
@@ -214,7 +258,6 @@ const app = {
         </div>
       `
     })
-
     $('.playlist').innerHTML = htmls.join('')
   },
   
