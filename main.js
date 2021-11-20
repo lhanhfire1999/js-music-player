@@ -12,6 +12,7 @@
  */
 const $ = document.querySelector.bind(document);
 const $$ = document.querySelectorAll.bind(document);
+const PLAYER_STORAGE_KEY = 'PLAYER-STORAGE';
 
 const player = $('.player');
 const heading = $('header h2');
@@ -24,12 +25,18 @@ const  prevSongBtn = $('.btn-prev');
 const nextSongBtn = $('.btn-next');
 const randomBtn = $('.btn-random');
 const repeatBtn = $('.btn-repeat');
+const playlist = $('.playlist');
 
 const app = {
   currentIndex: 0,
   isPlaying: false,
   isRandom: false,
   isReapeat: false,
+  config : JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)) || {},
+  setConfig(key, value){
+    this.config[key] = value;
+    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(this.config));
+  },
   songs: [
     {
       name:'Thay Lòng',
@@ -62,34 +69,34 @@ const app = {
       image: './assets/img/song5.png',
     },
     {
-      name:'Thay Lòng',
-      singer: 'DIMZ, TVk, NHT',
-      path: './assets/path/song1.mp3',
-      image: './assets/img/song1.png',
+      name:'Go Home',
+      singer: 'K-391, Mentum, Linko',
+      path: './assets/path/song6.mp3',
+      image: './assets/img/song6.png',
     },
     {
-      name:'Ái Nộ',
-      singer: 'Yến Tatoo, Masew, Great',
-      path: './assets/path/song2.mp3',
-      image: './assets/img/song2.png',
+      name:'New Love',
+      singer: 'Silk City, Ellie Goulding, Diplo, Mark Ronson',
+      path: './assets/path/song7.mp3',
+      image: './assets/img/song7.png',
     },
     {
-      name:'Đông Phai Mờ Dáng Ai',
-      singer: 'DatKaa, QT Beatz',
-      path: './assets/path/song3.mp3',
-      image: './assets/img/song3.png',
+      name:'Sorry',
+      singer: 'Alan Walker, ISÁK',
+      path: './assets/path/song8.mp3',
+      image: './assets/img/song8.png',
     },
     {
-      name:'Cưới Luôn Được Không?',
-      singer: 'YuniBoo, Goctoi Mixer',
-      path: './assets/path/song4.mp3',
-      image: './assets/img/song4.png',
+      name:'Last Summer',
+      singer: 'Tokyo Machine, Weird Genius, Lights',
+      path: './assets/path/song9.mp3',
+      image: './assets/img/song9.png',
     },
     {
-      name:'Yêu Là Cưới',
-      singer: 'Phát Hồ, X2X',
-      path: './assets/path/song5.mp3',
-      image: './assets/img/song5.png',
+      name:'Believers',
+      singer: 'Alan Walker, Conor Maynard',
+      path: './assets/path/song10.mp3',
+      image: './assets/img/song10.png',
     },
   ],
   defaultProperties(){
@@ -133,6 +140,7 @@ const app = {
       _this.isPlaying = true;
       player.classList.add('playing');
       cdThumbAnimate.play();
+      _this.setConfig('currentIndex', _this.currentIndex);
     }
 
     // When song pause 
@@ -166,6 +174,7 @@ const app = {
       _this.render();
       _this.scrollActiveSong();
     }
+
     // Handle click prevSongBtn
     prevSongBtn.onclick = () => {
       if(_this.isRandom){
@@ -183,21 +192,42 @@ const app = {
     randomBtn.onclick = () => {
       _this.isRandom = !_this.isRandom;
       randomBtn.classList.toggle('active', _this.isRandom);
-      console.log(randomBtn);
+      _this.setConfig('isRandom', _this.isRandom );
     }
 
     // Repeat song
     repeatBtn.onclick = () => {
       _this.isReapeat = !_this.isReapeat;
-
       repeatBtn.classList.toggle('active', _this.isReapeat);
       _this.isReapeat ? audio.loop = true : audio.loop = false;
+      _this.setConfig('isReapeat', _this.isReapeat );
     }
 
     // Handle next song when audio ended
     audio.onended = () => {
       nextSongBtn.click()
     }
+
+    playlist.onclick = (e) => {
+      const songNode = e.target.closest('.song:not(.active)');
+      const optionSongNode = e.target.closest('.song__option');
+      if(songNode || optionSongNode){
+        if(songNode){
+          _this.currentIndex = Number(songNode.dataset.index);
+          _this.loadCurrentSong();
+          audio.play();
+          _this.render();
+        }
+      }
+    }
+  },
+  loadConfig(){
+    Object.assign(this, this.config);
+  },
+  loadCurrentSong(){
+    heading.innerText = this.currentSong.name;
+    cdThumb.style.backgroundImage = `url('${this.currentSong.image}')`;
+    audio.src = this.currentSong.path;
   },
   nextSong(){
     this.currentIndex++;
@@ -221,13 +251,8 @@ const app = {
     this.currentIndex = newIndex;
     this.loadCurrentSong();
   },
-  loadCurrentSong(){
-    heading.innerText = this.currentSong.name;
-    cdThumb.style.backgroundImage = `url('${this.currentSong.image}')`;
-    audio.src = this.currentSong.path;
-  },
   scrollActiveSong(){
-    if(this.currentIndex < 5){
+    if(this.currentIndex <= 3){
       setTimeout(() =>{
         $('.song.active').scrollIntoView({
           behavior: 'smooth',
@@ -246,7 +271,7 @@ const app = {
   render() {
     const htmls = this.songs.map((song, index) => {
       return `
-        <div class="song ${index === this.currentIndex ? 'active' : ''}">
+        <div class="song ${index === this.currentIndex ? 'active' : ''}" data-index="${index}">
           <div class="song__thumbnail" style="background-image: url('${song.image}')"></div>
           <div class="song__body">
             <h3 class="song__body-title">${song.name}</h3>
@@ -258,10 +283,13 @@ const app = {
         </div>
       `
     })
-    $('.playlist').innerHTML = htmls.join('')
+    playlist.innerHTML = htmls.join('');
   },
   
   start(){
+    // Assign configLocal into app
+    this.loadConfig();
+
     // Define properties for object
     this.defaultProperties();
 
@@ -273,6 +301,12 @@ const app = {
   
     //  Render playlist
     this.render();
+
+
+    // Show initial status of reapeat & random button and songActived 
+    randomBtn.classList.toggle('active', this.isRandom);
+    repeatBtn.classList.toggle('active', this.isReapeat);
+    this.scrollActiveSong();
   }
 }
  
