@@ -31,12 +31,8 @@ const app = {
   currentIndex: 0,
   isPlaying: false,
   isRandom: false,
-  isReapeat: false,
-  config : JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)) || {},
-  setConfig(key, value){
-    this.config[key] = value;
-    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(this.config));
-  },
+  isRepeat: false,
+  randomSongList: [],
   songs: [
     {
       name:'Thay Lòng',
@@ -99,6 +95,11 @@ const app = {
       image: './assets/img/song10.png',
     },
   ],
+  config : JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)) ?? {},
+  setConfig(key, value){
+    this.config[key] = value;
+    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(this.config));
+  },
   defaultProperties(){
     Object.defineProperty(this, 'currentSong', {
       get(){
@@ -197,14 +198,14 @@ const app = {
 
     // Repeat song
     repeatBtn.onclick = () => {
-      _this.isReapeat = !_this.isReapeat;
-      _this.setConfig('isReapeat', _this.isReapeat );
-      repeatBtn.classList.toggle('active', _this.isReapeat);
+      _this.isRepeat = !_this.isRepeat;
+      _this.setConfig('isRepeat', _this.isRepeat );
+      repeatBtn.classList.toggle('active', _this.isRepeat);
     }
 
     // Handle next song when audio ended
     audio.onended = () => {
-      if(_this.isReapeat){
+      if(_this.isRepeat){
         audio.play();
       }
       else{
@@ -249,10 +250,19 @@ const app = {
   },
   playRandomSong(){
     let newIndex;
+
+    if(this.randomSongList.length === this.songs.length){
+      this.randomSongList = [];
+    }
+
     do{
       newIndex = Math.floor(Math.random() * this.songs.length)
-    }while(this.currentIndex === newIndex);
+    }while(newIndex === this.currentIndex || this.randomSongList.includes(newIndex));
+
     this.currentIndex = newIndex;
+    this.randomSongList.push(newIndex);
+    this.setConfig('randomSongList', this.randomSongList);
+
     this.loadCurrentSong();
   },
   scrollActiveSong(){
@@ -309,7 +319,7 @@ const app = {
 
     // Show initial status of reapeat & random button and songActived 
     randomBtn.classList.toggle('active', this.isRandom);
-    repeatBtn.classList.toggle('active', this.isReapeat);
+    repeatBtn.classList.toggle('active', this.isRepeat);
     this.scrollActiveSong();
   }
 }
