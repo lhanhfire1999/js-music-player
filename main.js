@@ -95,17 +95,13 @@ const app = {
       image: './assets/img/song10.png',
     },
   ],
+  get currentSong(){
+    return this.songs[this.currentIndex];
+  },
   config : JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)) ?? {},
   setConfig(key, value){
     this.config[key] = value;
     localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(this.config));
-  },
-  defaultProperties(){
-    Object.defineProperty(this, 'currentSong', {
-      get(){
-        return this.songs[this.currentIndex];
-      }
-    })
   },
   handleEvent(){
     const _this = this;
@@ -304,9 +300,6 @@ const app = {
     // Assign configLocal into app
     this.loadConfig();
 
-    // Define properties for object
-    this.defaultProperties();
-
     // Listen / handle events (DOM events)
     this.handleEvent();
 
@@ -315,7 +308,6 @@ const app = {
   
     //  Render playlist
     this.render();
-
 
     // Show initial status of reapeat & random button and songActived 
     randomBtn.classList.toggle('active', this.isRandom);
