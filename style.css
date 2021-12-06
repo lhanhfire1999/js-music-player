@@ -1,5 +1,5 @@
 :root {
-  --primary-color: #ec1f55;
+  --primary-color: #4d9bf7;
   --text-color: #333;
 }
 
@@ -109,22 +109,25 @@ header h2 {
   color: #fff;
 }
 
-.progress {
-  /*Remove the default status */
-  appearance: none;
-  -webkit-appearance: none;
-
-  width: 100%;
-  height: 6px;
-  background-color: #d3d3d3;
-  outline: none;
-
-  opacity: 0.7;
-  -webkit-transition: 0.2s;
-  transition: opacity 0.2s;
+.progress-area {
+  display: flex;
+  align-items: center;
 }
 
-.progress::-webkit-slider-thumb {
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+}
+
+.current-time,
+.duration-time {
+  min-width: 60px;
+  text-align: center;
+  color: #666;
+}
+
+/* .progress::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
 
@@ -135,13 +138,14 @@ header h2 {
 
   background-color: var(--primary-color);
   cursor: pointer;
-}
+} */
 
-/*  */
+/*  Music list */
 .playlist {
   margin-top: 408px;
   padding: 12px;
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+  /* overflow-y: scroll; */
 }
 .song {
   display: flex;

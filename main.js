@@ -15,17 +15,23 @@ const $$ = document.querySelectorAll.bind(document);
 const PLAYER_STORAGE_KEY = 'PLAYER-STORAGE';
 
 const player = $('.player');
+const dashboard = $('.dashboard');
 const heading = $('header h2');
 const cd = $('.cd');
 const cdThumb = $('.cd-thumb');
 const playBtn = $('.btn-toggle-play');
+
 const audio = $('#audio');
-const process = $('#progress');
+const process = $('.progress-bar');
+const currentTime = $('.current-time');
+const durationTime = $('.duration-time');
+
 const  prevSongBtn = $('.btn-prev');
 const nextSongBtn = $('.btn-next');
 const randomBtn = $('.btn-random');
 const repeatBtn = $('.btn-repeat');
 const playlist = $('.playlist');
+
 
 const app = {
   currentIndex: 0,
@@ -132,31 +138,49 @@ const app = {
         audio.pause();
       }
     }
-    // When song play
-    audio.onplay = function(){
-      _this.isPlaying = true;
-      player.classList.add('playing');
-      cdThumbAnimate.play();
-      _this.setConfig('currentIndex', _this.currentIndex);
-    }
 
-    // When song pause 
-    audio.onpause = function(){
-      _this.isPlaying = false;
-      player.classList.remove('playing');
-      cdThumbAnimate.pause();
-    }
+    // Handle take duration/current Time for Progress-area
+    audio.onloadedmetadata= function (){
+      durationTime.innerText = _this.covertTime(this.duration);
+      currentTime.innerText = _this.covertTime(this.currentTime);
+
+      // When song play
+      this.onplay = function(){
+        _this.isPlaying = true;
+        player.classList.add('playing');
+        cdThumbAnimate.play();
+        _this.setConfig('currentIndex', _this.currentIndex);
+      }
+
+      // When song pause 
+      this.onpause = function(){
+        _this.isPlaying = false;
+        player.classList.remove('playing');
+        cdThumbAnimate.pause();
+      }
+
+      // currentTime audio was changed
+      this.ontimeupdate = function(){
+        const progressPercent = Math.floor(audio.currentTime/audio.duration *100) || 0;
+        process.value = progressPercent;
+        currentTime.innerText = _this.covertTime(this.currentTime);
+      }
+
+      // Handle next song when audio ended
+      this.onended = function() {
+        if(_this.isRepeat){
+          audio.play();
+        }
+        else{
+          nextSongBtn.click()
+        }
+      }
+    };
 
     // When Seek audio
     process.oninput = (e) => {
       const seekTime = Math.floor(e.target.value * audio.duration /100);
       audio.currentTime = seekTime;
-    }
-
-    // currentTime audio has change
-    audio.ontimeupdate = function(){
-      const progressPercent = Math.floor(audio.currentTime/audio.duration *100) || 0;
-      process.value = progressPercent;
     }
 
     // Handle click nextSongBtn
@@ -199,16 +223,6 @@ const app = {
       repeatBtn.classList.toggle('active', _this.isRepeat);
     }
 
-    // Handle next song when audio ended
-    audio.onended = () => {
-      if(_this.isRepeat){
-        audio.play();
-      }
-      else{
-        nextSongBtn.click()
-      }
-    }
-
     playlist.onclick = (e) => {
       const songNode = e.target.closest('.song:not(.active)');
       const optionSongNode = e.target.closest('.song__option');
@@ -229,6 +243,11 @@ const app = {
     heading.innerText = this.currentSong.name;
     cdThumb.style.backgroundImage = `url('${this.currentSong.image}')`;
     audio.src = this.currentSong.path;
+  },
+  covertTime(time){
+    const minutes = Math.floor(time / 60).toString().padStart(2, '0');
+    const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+    return `${minutes}:${seconds}`
   },
   nextSong(){
     this.currentIndex++;
@@ -300,12 +319,12 @@ const app = {
     // Assign configLocal into app
     this.loadConfig();
 
+    //  Load inform of current song
+    this.loadCurrentSong();
+
     // Listen / handle events (DOM events)
     this.handleEvent();
 
-    //  Load inform of current song
-    this.loadCurrentSong();
-  
     //  Render playlist
     this.render();
 
@@ -313,6 +332,8 @@ const app = {
     randomBtn.classList.toggle('active', this.isRandom);
     repeatBtn.classList.toggle('active', this.isRepeat);
     this.scrollActiveSong();
+
+    // playlist.style.height = (window.innerHeight - dashboard.clientHeight) + 'px';
   }
 }
  
