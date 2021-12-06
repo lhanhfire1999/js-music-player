@@ -39,6 +39,7 @@ const app = {
   isRandom: false,
   isRepeat: false,
   randomSongList: [],
+  prevPauseTime: 0,
   songs: [
     {
       name:'Thay Lòng',
@@ -142,7 +143,7 @@ const app = {
     // Handle take duration/current Time for Progress-area
     audio.onloadedmetadata= function (){
       durationTime.innerText = _this.covertTime(this.duration);
-      currentTime.innerText = _this.covertTime(this.currentTime);
+      currentTime.innerText = _this.covertTime(_this.prevPauseTime);
 
       // When song play
       this.onplay = function(){
@@ -155,14 +156,16 @@ const app = {
       // When song pause 
       this.onpause = function(){
         _this.isPlaying = false;
+        _this.setConfig('prevPauseTime', this.currentTime);
         player.classList.remove('playing');
         cdThumbAnimate.pause();
       }
 
       // currentTime audio was changed
       this.ontimeupdate = function(){
+        console.log();
         const progressPercent = Math.floor(audio.currentTime/audio.duration *100) || 0;
-        process.value = progressPercent;
+        process.value = progressPercent ;
         currentTime.innerText = _this.covertTime(this.currentTime);
       }
 
@@ -174,6 +177,7 @@ const app = {
         else{
           nextSongBtn.click()
         }
+        _this.setConfig('prevPauseTime', 0);
       }
     };
 
@@ -232,6 +236,7 @@ const app = {
           _this.loadCurrentSong();
           audio.play();
           _this.render();
+          _this.setConfig('prevPauseTime', 0);
         }
       }
     }
@@ -254,6 +259,7 @@ const app = {
     if(this.currentIndex > this.songs.length-1){
       this.currentIndex = 0;
     }
+    this.setConfig('prevPauseTime', 0);
     this.loadCurrentSong();
   },
   prevSong(){
@@ -261,6 +267,7 @@ const app = {
     if(this.currentIndex < 0){
       this.currentIndex = this.songs.length - 1;
     }
+    this.setConfig('prevPauseTime', 0);
     this.loadCurrentSong();
   },
   playRandomSong(){
@@ -277,7 +284,7 @@ const app = {
     this.currentIndex = newIndex;
     this.randomSongList.push(newIndex);
     this.setConfig('randomSongList', this.randomSongList);
-
+    this.setConfig('prevPauseTime', 0);
     this.loadCurrentSong();
   },
   scrollActiveSong(){
@@ -333,10 +340,17 @@ const app = {
     repeatBtn.classList.toggle('active', this.isRepeat);
     this.scrollActiveSong();
 
+    // Get time on prevPauseTime (LocalStorage)
+    if(this.prevPauseTime){
+      audio.currentTime = this.prevPauseTime;
+      process.value = Math.floor(this.prevPauseTime / audio.duration * 100);   
+      currentTime.innerText = this.covertTime(this.prevPauseTime);
+    }
+
     // playlist.style.height = (window.innerHeight - dashboard.clientHeight) + 'px';
   }
 }
  
  app.start();
  
-  
+  console.log(Math.floor(this.prevPauseTime / audio.duration * 100));
